@@ -35,22 +35,20 @@ public final class EchoClient {
         EventLoopGroup group = new NioEventLoopGroup();
 
         try {
-            Bootstrap b = new Bootstrap();
-            b.group(group)
-             .channel(NioSocketChannel.class)
-             .handler(new ChannelInitializer<SocketChannel>() {
-                 @Override
-                 public void initChannel(SocketChannel ch) throws Exception {
-                     ChannelPipeline p = ch.pipeline();
-                     p.addLast(new EchoClientHandler());
-                 }
-             });
+            Bootstrap bootstrap = new Bootstrap();
+            bootstrap.group(group)
+                    .channel(NioSocketChannel.class)
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        public void initChannel(SocketChannel socketChannel) {
+                            ChannelPipeline channelPipeline = socketChannel.pipeline();
+                            channelPipeline.addLast(new EchoClientHandler());
+                        }
+                    });
 
-            ChannelFuture f = b.connect("localhost", 8888).sync();
-
-            f.channel().closeFuture().sync();
-        }
-        finally {
+            ChannelFuture channelFuture = bootstrap.connect("localhost", 8888).sync();
+            channelFuture.channel().closeFuture().sync();
+        } finally {
             group.shutdownGracefully();
         }
     }
